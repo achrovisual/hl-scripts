@@ -15,4 +15,19 @@ worker_02=172.16.4.205
 master_nodes={$master_02 $master_03}
 worker_nodes={$worker_01 $worker_02}
 
-curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - server --cluster-init --disable=servicelb
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <node_type>"
+  exit 1
+fi
+
+node_type="$1"
+
+if [[ "$node_type" == "server" ]]; then
+  curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - server --cluster-init --disable=servicelb
+elif [[ "$node_type" == "agent" ]]; then
+  curl -sfL https://get.k3s.io | K3S_URL=https://$master_01:6443 K3S_TOKEN=SECRET sh -
+else
+  echo "Error: Invalid node type: $node_type."
+  exit 1
+fi
+
