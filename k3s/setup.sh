@@ -39,7 +39,7 @@ if [[ "$node_type" == "server" ]]; then
   sudo helm repo add argo https://argoproj.github.io/argo-helm
 
   # Install Argo CD with ingress enabled and TLS disabled
-  sudo sudo helm upgrade argo-cd argo/argo-cd --version 7.8.10 --namespace argo-cd --kubeconfig /etc/rancher/k3s/k3s.yaml --create-namespace --set nameOverride=argo-cd --set configs.params.server.insecure=true --set server.ingress.enabled=true
+  sudo sudo helm install argo-cd argo/argo-cd --version 7.8.10 --namespace argo-cd --kubeconfig /etc/rancher/k3s/k3s.yaml --create-namespace --set nameOverride=argo-cd --set configs.params.server.insecure=true --set server.ingress.enabled=true
 
   # Patch argo-cd-server service to LoadBalancer
   sudo kubectl patch svc argo-cd-server -n argo-cd -p '{"spec": {"type": "LoadBalancer"}}'
