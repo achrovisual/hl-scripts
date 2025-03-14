@@ -34,6 +34,12 @@ if [[ "$node_type" == "server" ]]; then
   sudo apt install upgrade -y
 
   sudo apt install helm
+  
+  # Add MetalLB Helm repo
+  sudo helm repo add metallb https://metallb.github.io/metallb
+  
+  # Install MetalLB
+  sudo helm install metallb metallb/metallb --namespace metallb --kubeconfig /etc/rancher/k3s/k3s.yaml --create-namespace 
 
   # Add Argo Helm repo
   sudo helm repo add argo https://argoproj.github.io/argo-helm
