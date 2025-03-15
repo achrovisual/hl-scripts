@@ -5,12 +5,12 @@
 # Worker Nodes: 172.16.4.204 - 172.16.4.205
 # Load Balancers: 172.16.4.206 - 172.16.4.210
 
-master_01=172.16.4.201
-master_02=172.16.4.202
-master_03=172.16.4.203
+master_01=172.16.4.111
+master_02=172.16.4.112
+master_03=172.16.4.113
 
-worker_01=172.16.4.204
-worker_02=172.16.4.205
+worker_01=172.16.4.121
+worker_02=172.16.4.122
 
 master_nodes={$master_02 $master_03}
 worker_nodes={$worker_01 $worker_02}
