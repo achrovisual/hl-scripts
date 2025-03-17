@@ -21,7 +21,8 @@ agent)
   ;;
 server)
   if [ -n "$server_ip" ]; then
-    # Server configuration logic with IP
+    # Install K3s server and register to master node
+    curl -sfL https://get.k3s.io | K3S_TOKEN=$server_token sh -s - server --disable=servicelb --server https://$server_ip:6443
   else
     # Install K3s server
     curl -sfL https://get.k3s.io | K3S_TOKEN=$server_token sh -s - server --cluster-init --disable=servicelb
