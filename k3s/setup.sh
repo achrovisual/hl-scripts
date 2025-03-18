@@ -42,6 +42,12 @@ server)
     # Install MetalLB
     sudo helm install metallb metallb/metallb --namespace metallb --kubeconfig /etc/rancher/k3s/k3s.yaml --create-namespace
 
+    # Add hl-k3s Helm repo
+    sudo helm repo add hl-k3s https://achrovisual.github.io/hl-k3s/ --kubeconfig /etc/rancher/k3s/k3s.yaml
+
+    # Install MetalLB CRs
+    sudo helm install metallb-setup hl-k3s/metallb-setup --version 0.1.0 --namespace metallb --kubeconfig /etc/rancher/k3s/k3s.yaml --set addressPool.name="hl-pool" --set addressPool.ipRange="172.16.4.201-172.16.4.254"
+
     # Add Argo Helm repo
     sudo helm repo add argo https://argoproj.github.io/argo-helm
 
