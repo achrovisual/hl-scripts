@@ -1,11 +1,29 @@
 #!/bin/bash
 
-node_type="$1"
-server_token="$2"
-server_ip="$3"
+node_type=""
+server_token=""
+server_ip=""
+
+while getopts "n:t:s:" opt; do
+  case "$opt" in
+    n) node_type="$OPTARG" ;;
+    t) server_token="$OPTARG" ;;
+    s) server_ip="$OPTARG" ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>]"
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>]"
+      exit 1
+      ;;
+  esac
+done
 
 if [ -z "$node_type" ] || [ -z "$server_token" ]; then
-  echo "Usage: $0 <node_type> <server_token> [server_ip]"
+  echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>]"
   exit 1
 fi
 
@@ -13,7 +31,7 @@ case "$node_type" in
 agent)
   if [ -z "$server_ip" ]; then
     echo "Error: Server IP address is required for agent node."
-    echo "Usage: $0 agent <server_ip>"
+    echo "Usage: $0 --node_type agent --server_token <value> --server_ip <value>"
     exit 1
   fi
 
@@ -31,8 +49,8 @@ server)
     curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg >/dev/null
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
 
-    sudo apt install update
-    sudo apt install upgrade -y
+    sudo apt update
+    sudo apt upgrade -y
 
     sudo apt install helm
 
@@ -42,11 +60,11 @@ server)
     # Install MetalLB
     sudo helm install metallb metallb/metallb --namespace metallb --kubeconfig /etc/rancher/k3s/k3s.yaml --create-namespace
 
-    # Add hl-k3s Helm repo
-    sudo helm repo add hl-k3s https://achrovisual.github.io/hl-k3s/ --kubeconfig /etc/rancher/k3s/k3s.yaml
-
     # Install MetalLB CRs
     sudo helm install metallb-setup hl-k3s/metallb-setup --version 0.1.0 --namespace metallb --kubeconfig /etc/rancher/k3s/k3s.yaml --set addressPool.name="hl-pool" --set addressPool.ipRange="172.16.4.201-172.16.4.254"
+
+    # Add hl-k3s Helm repo
+    sudo helm repo add hl-k3s https://achrovisual.github.io/hl-k3s/ --kubeconfig /etc/rancher/k3s/k3s.yaml
 
     # Add Argo Helm repo
     sudo helm repo add argo https://argoproj.github.io/argo-helm
