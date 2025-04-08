@@ -62,23 +62,15 @@ case "$node_type" in
 
       sudo apt install helm
 
-      # Add MetalLB Helm repo
-      sudo helm repo add metallb https://metallb.github.io/metallb
-
-      # Install MetalLB
-      sudo helm install metallb metallb/metallb --namespace metallb --kubeconfig /etc/rancher/k3s/k3s.yaml --create-namespace
-
-      # Install MetalLB CRs
-      sudo helm install metallb-setup hl-k3s/metallb-setup --version 0.1.0 --namespace metallb --kubeconfig /etc/rancher/k3s/k3s.yaml --set addressPool.name="hl-pool" --set addressPool.ipRange="$address_pool"
-
       # Add hl-k3s Helm repo
       sudo helm repo add hl-k3s https://achrovisual.github.io/hl-k3s/ --kubeconfig /etc/rancher/k3s/k3s.yaml
 
-      # Add Argo Helm repo
-      sudo helm repo add argo https://argoproj.github.io/argo-helm
+      # Install Argo CD
+      sudo helm install argo-cd charts/argo-cd --namespace argo-cd --create-namespace --kubeconfig /etc/rancher/k3s/k3s.yaml\
 
-      # Install Argo CD with ingress enabled and TLS disabled
-      sudo helm install argo-cd argo/argo-cd --version 7.8.10 --namespace argo-cd --kubeconfig /etc/rancher/k3s/k3s.yaml --create-namespace --set nameOverride=argo-cd --set configs.params.server\\.insecure=true --set server.ingress.enabled=true --set server.service.type="LoadBalancer"
+      # Setup Argo CD and apps
+      # This installs MetalLB and OpenTelemetry Collector
+      sudo helm template charts/argo-cd-setup/ --kubeconfig /etc/rancher/k3s/k3s.yaml | sudo kubectl apply -f - -n argo-cd
 
       # Print initial admin password
       sudo kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
