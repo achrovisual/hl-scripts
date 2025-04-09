@@ -4,28 +4,30 @@ node_type=""
 server_token=""
 server_ip=""
 address_pool=""
+hostname=""
 
-while getopts "n:t:s:a:" opt; do
+while getopts "n:t:s:a:T:" opt; do
   case "$opt" in
     n) node_type="$OPTARG" ;;
     t) server_token="$OPTARG" ;;
     s) server_ip="$OPTARG" ;;
     a) address_pool="$OPTARG" ;;
+    T) hostname="$OPTARG" ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
-      echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>]"
+      echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>] [--address_pool <value>] [--tls_san <value>]"
       exit 1
       ;;
     :)
       echo "Option -$OPTARG requires an argument." >&2
-      echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>]"
+      echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>] [--address_pool <value>] [--tls_san <value>]"
       exit 1
       ;;
   esac
 done
 
 if [ -z "$node_type" ] || [ -z "$server_token" ]; then
-  echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>] [--address_pool <value>]"
+  echo "Usage: $0 --node_type <value> --server_token <value> [--server_ip <value>] [--address_pool <value>] [--tls_san <value>]"
   exit 1
 fi
 
@@ -40,18 +42,23 @@ case "$node_type" in
     curl -sfL https://get.k3s.io | K3S_URL=https://$server_ip:6443 K3S_TOKEN=$server_token sh -
     ;;
   server)
+    tls_san_arg=""
+    if [ -n "$hostname" ]; then
+      tls_san_arg="--tls-san=$hostname"
+    fi
+
     if [ -n "$server_ip" ]; then
       # Install K3s server and register to master node
-      curl -sfL https://get.k3s.io | K3S_TOKEN=$server_token sh -s - server --disable=servicelb --server https://$server_ip:6443
+      curl -sfL https://get.k3s.io | K3S_TOKEN=$server_token sh -s - server --disable=servicelb --server https://$server_ip:6443 "$tls_san_arg"
     else
       # Install K3s server
       if [ -z "$address_pool" ] || [ -z "$server_token" ]; then
           echo "Error: address_pool and server_token are required for a master node."
-          echo "Usage: $0 --node_type server --server_token <value> --address_pool <value>"
+          echo "Usage: $0 --node_type server --server_token <value> --address_pool <value> [--tls_san <value>]"
           exit 1
       fi
 
-      curl -sfL https://get.k3s.io | K3S_TOKEN=$server_token sh -s - server --cluster-init --disable=servicelb
+      curl -sfL https://get.k3s.io | K3S_TOKEN=$server_token sh -s - server --cluster-init --disable=servicelb "$tls_san_arg"
 
       # Install Helm
       curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg >/dev/null
