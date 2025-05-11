@@ -22,3 +22,12 @@ echo "code code/add-microsoft-repo boolean true" | sudo debconf-set-selections
 sudo apt install apt-transport-https
 sudo apt update
 sudo apt install code # or code-insiders
+
+# Install Flatpak
+sudo apt install flatpak
+sudo apt install gnome-software-plugin-flatpak
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# Install Zen
+flatpak install flathub app.zen_browser.zen
+flatpak run app.zen_browser.zen
