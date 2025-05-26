@@ -115,12 +115,12 @@ case "$node_type" in
       # You might need to adjust this path depending on your project structure
       sudo helm repo add argo https://argoproj.github.io/argo-helm
       
-      sudo helm install argo-cd charts/argo-cd --namespace argo-cd --create-namespace --kubeconfig /etc/rancher/k3s/k3s.yaml
+      sudo helm install argo-cd charts/private/argo-cd --namespace argo-cd --create-namespace --kubeconfig /etc/rancher/k3s/k3s.yaml
       sudo helm dependency build charts/private/argo-cd
       echo "Setting up Argo CD and apps (MetalLB, OpenTelemetry Collector)..."
       # Ensure the charts/argo-cd-setup path is correct relative to where the script is run
       # You might need to adjust this path depending on your project structure
-      sudo helm template charts/argo-cd-setup/ --kubeconfig /etc/rancher/k3s/k3s.yaml | sudo kubectl apply -f - -n argo-cd
+      sudo helm template charts/private/argo-cd-setup/ --kubeconfig /etc/rancher/k3s/k3s.yaml | sudo kubectl apply -f - -n argo-cd
 
       echo "Initial Argo CD admin password:"
       sudo kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
