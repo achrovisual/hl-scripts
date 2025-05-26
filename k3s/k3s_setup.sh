@@ -104,6 +104,12 @@ case "$node_type" in
       echo "Adding hl-k3s Helm repo..."
       sudo helm repo add hl-k3s https://achrovisual.github.io/hl-k3s/ --kubeconfig /etc/rancher/k3s/k3s.yaml
 
+      echo "Adding hl-k3s git repo..."
+      mkdir repos
+      cd repos/
+      git clone https://github.com/achrovisual/hl-k3s
+      cd hl-k3s
+
       echo "Installing Argo CD..."
       # Ensure the charts/argo-cd path is correct relative to where the script is run
       # You might need to adjust this path depending on your project structure
