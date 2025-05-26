@@ -107,6 +107,7 @@ case "$node_type" in
       echo "Installing Argo CD..."
       # Ensure the charts/argo-cd path is correct relative to where the script is run
       # You might need to adjust this path depending on your project structure
+      sudo helm repo add argo https://argoproj.github.io/argo-helm
       sudo helm install argo-cd charts/argo-cd --namespace argo-cd --create-namespace --kubeconfig /etc/rancher/k3s/k3s.yaml
 
       echo "Setting up Argo CD and apps (MetalLB, OpenTelemetry Collector)..."
