@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>k3s</h1>
+  <h1>K3s</h1>
 </div>
 
 
@@ -17,5 +17,13 @@ $ curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - server \
 ### Worker Node
 For worker nodes, install K3s in agent mode.
 ```console
-curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - agent --server https://<ip or hostname of server>:6443
+$ curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - agent --server https://<ip or hostname of server>:6443
+```
+
+## Setup Scripts
+
+### k3s_setup.sh
+This sets up Argo CD, MetalLB, and OpenTelemetry Collector. To get the login password for Argo CD, run the command below.
+```console
+$ sudo kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
