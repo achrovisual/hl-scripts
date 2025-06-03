@@ -22,7 +22,7 @@ $ curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - agent --server https:/
 
 ## Setup Scripts
 
-### k3s_setup.sh
+### k3s/server/setup.sh
 This sets up Argo CD, MetalLB, and OpenTelemetry Collector. To get the login password for Argo CD, run the command below.
 ```console
 $ sudo kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
