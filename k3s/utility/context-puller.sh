@@ -43,6 +43,24 @@ fi
 echo "yq check complete."
 # -----------------------------
 
+# --- KUBECTL INSTALLATION CHECK ---
+# This script requires 'kubectl' to merge and set the Kubernetes context.
+# This section checks if 'kubectl' is installed.
+echo "Starting kubectl installation check..."
+if ! command -v kubectl &> /dev/null
+then
+    echo "kubectl not found."
+    echo "Please install kubectl manually. Instructions can be found here:"
+    echo "  Linux: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/"
+    echo "  macOS: https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/"
+    echo "  Windows: https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/"
+    exit 1
+else
+    echo "kubectl is already installed."
+fi
+echo "kubectl check complete."
+# ----------------------------------
+
 K3S_MASTER_USER=""
 K3S_MASTER_IP=""
 K3S_MASTER_SSH_PORT="22"
