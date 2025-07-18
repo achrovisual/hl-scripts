@@ -86,6 +86,7 @@ fi
 echo "Starting K3s context retrieval from ${K3S_MASTER_IP}..."
 
 TEMP_KUBECONFIG_DIR=$(mktemp -d)
+trap 'rm -rf "${TEMP_KUBECONFIG_DIR}"' EXIT
 TEMP_KUBECONFIG_FILE="${TEMP_KUBECONFIG_DIR}/k3s.yaml"
 
 echo "Temporary directory created: ${TEMP_KUBECONFIG_DIR}"
