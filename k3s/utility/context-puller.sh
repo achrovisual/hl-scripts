@@ -45,9 +45,36 @@ echo "yq check complete."
 
 K3S_MASTER_USER=""
 K3S_MASTER_IP=""
-K3S_MASTER_SSH_PORT=""
+K3S_MASTER_SSH_PORT="22"
 SSH_KEY_PATH=""
 CONTEXT_NAME=""
+
+usage() {
+    echo "Usage: $0 -u <master_user> -i <master_ip> -c <context_name> [-p <ssh_port>] [-k <ssh_key_path>]"
+    echo "  -u <master_user>      : Username for SSH connection to K3s master (e.g., ubuntu, ec2-user)"
+    echo "  -i <master_ip>        : IP address or hostname of the K3s master node"
+    echo "  -c <context_name>     : Desired name for the Kubernetes context (e.g., my-k3s-cluster)"
+    echo "  -p <ssh_port>         : Optional. SSH port for K3s master (default: 22)"
+    echo "  -k <ssh_key_path>     : Optional. Path to your SSH private key (e.g., ~/.ssh/id_rsa)"
+    exit 1
+}
+
+while getopts "u:i:c:p:k:" opt; do
+    case "${opt}" in
+        u) K3S_MASTER_USER="${OPTARG}" ;;
+        i) K3S_MASTER_IP="${OPTARG}" ;;
+        c) CONTEXT_NAME="${OPTARG}" ;;
+        p) K3S_MASTER_SSH_PORT="${OPTARG}" ;;
+        k) SSH_KEY_PATH="${OPTARG}" ;;
+        *) usage ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${K3S_MASTER_USER}" ] || [ -z "${K3S_MASTER_IP}" ] || [ -z "${CONTEXT_NAME}" ]; then
+    echo "Error: Missing mandatory arguments."
+    usage
+fi
 
 echo "Starting K3s context retrieval from ${K3S_MASTER_IP}..."
 
