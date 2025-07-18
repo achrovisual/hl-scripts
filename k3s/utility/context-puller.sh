@@ -18,25 +18,14 @@
 
 # --- YQ INSTALLATION CHECK ---
 # This script requires 'yq' (a portable YAML processor) to modify the kubeconfig.
-# This section checks if 'yq' is installed and attempts to install it if not.
-# This check is specifically for Debian/Ubuntu based systems.
+# This section checks if 'yq' is installed.
 echo "Starting yq installation check..."
 if ! command -v yq &> /dev/null
 then
-    echo "yq not found. Attempting to install yq..."
-    if [ -f /etc/debian_version ]; then
-        sudo apt-get update && sudo apt-get install -y yq
-    else
-        echo "This script is designed for Debian-based systems to auto-install yq."
-        echo "Could not determine a Debian-based package manager or install yq automatically."
-        echo "Please install yq manually: https://github.com/mikefarah/yq#install"
-        exit 1
-    fi
-    if ! command -v yq &> /dev/null; then
-        echo "yq installation failed. Please install yq manually."
-        exit 1
-    fi
-    echo "yq installed successfully."
+    echo "yq not found."
+    echo "Please install yq manually. Instructions can be found here:"
+    echo "  https://github.com/mikefarah/yq#install"
+    exit 1
 else
     echo "yq is already installed."
 fi
