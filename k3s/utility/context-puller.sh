@@ -93,13 +93,13 @@ TEMP_KUBECONFIG_FILE="${TEMP_KUBECONFIG_DIR}/k3s.yaml"
 echo "Temporary directory created: ${TEMP_KUBECONFIG_DIR}"
 
 echo "Attempting to copy kubeconfig from ${K3S_MASTER_IP}..."
-SCP_COMMAND="scp -P \"${K3S_MASTER_SSH_PORT}\""
+SCP_COMMAND_ARRAY=(scp -P "${K3S_MASTER_SSH_PORT}")
 if [ -n "${SSH_KEY_PATH}" ]; then
-    SCP_COMMAND+=" -i \"${SSH_KEY_PATH}\""
+    SCP_COMMAND_ARRAY+=(-i "${SSH_KEY_PATH}")
 fi
-SCP_COMMAND+=" \"${K3S_MASTER_USER}@${K3S_MASTER_IP}:/home/${K3S_MASTER_USER}/k3s.yaml\" \"${TEMP_KUBECONFIG_FILE}\""
+SCP_COMMAND_ARRAY+=("${K3S_MASTER_USER}@${K3S_MASTER_IP}:/home/${K3S_MASTER_USER}/k3s.yaml" "${TEMP_KUBECONFIG_FILE}")
 
-if eval "${SCP_COMMAND}"; then
+if "${SCP_COMMAND_ARRAY[@]}"; then
     echo "Kubeconfig successfully copied to ${TEMP_KUBECONFIG_FILE}"
 else
     echo "Error: Failed to copy kubeconfig. Please ensure you performed the pre-requisite steps on the K3s master node. Also check SSH connectivity, username, IP, port, SSH key path, and file permissions on the master."
