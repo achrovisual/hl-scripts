@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # --- IMPORTANT PRE-REQUISITE ON YOUR K3S MASTER NODE ---
 # The user specified by K3S_MASTER_USER typically does not have direct read access
