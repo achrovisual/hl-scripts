@@ -1,14 +1,21 @@
 #!/bin/bash
 
-# --- User Configuration ---
-# This user will have access to the K3s cluster via their kubeconfig.
-K3S_MASTER_USER=""
+# --- Input Argument ---
+# K3S_MASTER_USER will be the first argument passed to the script.
+K3S_MASTER_USER="$1"
+
+# Basic validation: Check if the username was provided.
+if [ -z "$K3S_MASTER_USER" ]; then
+    echo "Error: K3S_MASTER_USER is not provided."
+    echo "Usage: $0 <your_username>"
+    echo "Example: $0 alice"
+    exit 1
+fi
 
 # --- Kubeconfig Setup for User ---
 echo "Setting up Kubeconfig for user: ${K3S_MASTER_USER}..."
 
-# 2. Run these commands to copy the kubeconfig to your user's home directory
-#    and set correct permissions:
+# Run these commands to copy the kubeconfig to your user's home directory and set correct permissions:
 sudo cp /etc/rancher/k3s/k3s.yaml /home/${K3S_MASTER_USER}/k3s.yaml
 sudo chown ${K3S_MASTER_USER}:${K3S_MASTER_USER} /home/${K3S_MASTER_USER}/k3s.yaml
 chmod 600 /home/${K3S_MASTER_USER}/k3s.yaml
