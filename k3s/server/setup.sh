@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# --- User Configuration ---
+# This user will have access to the K3s cluster via their kubeconfig.
+K3S_MASTER_USER=""
+
+# --- Kubeconfig Setup for User ---
+echo "Setting up Kubeconfig for user: ${K3S_MASTER_USER}..."
+
+# 2. Run these commands to copy the kubeconfig to your user's home directory
+#    and set correct permissions:
+sudo cp /etc/rancher/k3s/k3s.yaml /home/${K3S_MASTER_USER}/k3s.yaml
+sudo chown ${K3S_MASTER_USER}:${K3S_MASTER_USER} /home/${K3S_MASTER_USER}/k3s.yaml
+chmod 600 /home/${K3S_MASTER_USER}/k3s.yaml
+
+echo "Kubeconfig setup complete for ${K3S_MASTER_USER}."
+
+---
+
 # Display a message indicating the start of Helm installation.
 echo "Installing Helm..."
 
