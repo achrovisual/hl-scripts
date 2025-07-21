@@ -1,24 +1,39 @@
 #!/bin/bash
 
+# Best practices for robust scripting:
+# set -e: Exit immediately if a command exits with a non-zero status.
+# set -u: Treat unset variables as an error when substituting.
+# set -o pipefail: The return value of a pipeline is the status of the last command
+#                  to exit with a non-zero status, or zero if no command exited with a non-zero status.
+set -euo pipefail
+
 # --- Input Argument ---
 # K3S_MASTER_USER will be the first argument passed to the script.
 K3S_MASTER_USER="$1"
 
 # Basic validation: Check if the username was provided.
-if [ -z "$K3S_MASTER_USER" ]; then
-    echo "Error: K3S_MASTER_USER is not provided."
-    echo "Usage: $0 <your_username>"
-    echo "Example: $0 alice"
+if [ -z "${K3S_MASTER_USER}" ]; then
+    echo "Error: K3S_MASTER_USER is not provided." >&2 # Redirect error message to stderr
+    echo "Usage: $0 <your_username>" >&2
+    echo "Example: $0 alice" >&2
     exit 1
 fi
 
+# Ensure the target user's home directory exists before copying kubeconfig.
+# Creates the directory and sets ownership if it doesn't exist, preventing errors.
+if [ ! -d "/home/${K3S_MASTER_USER}" ]; then
+    echo "Warning: User home directory /home/${K3S_MASTER_USER} does not exist. Attempting to create it."
+    sudo mkdir -p "/home/${K3S_MASTER_USER}"
+    sudo chown "${K3S_MASTER_USER}":"${K3S_MASTER_USER}" "/home/${K3S_MASTER_USER}"
+fi
+
 # --- Kubeconfig Setup for User ---
-echo "Setting up Kubeconfig for user: ${K3S_MASTER_USER}..."
+echo "Setting up Kubeconfig for user: ${K3S_MASTER_USER}."
 
 # Run these commands to copy the kubeconfig to your user's home directory and set correct permissions:
-sudo cp /etc/rancher/k3s/k3s.yaml /home/${K3S_MASTER_USER}/k3s.yaml
-sudo chown ${K3S_MASTER_USER}:${K3S_MASTER_USER} /home/${K3S_MASTER_USER}/k3s.yaml
-chmod 600 /home/${K3S_MASTER_USER}/k3s.yaml
+sudo cp /etc/rancher/k3s/k3s.yaml "/home/${K3S_MASTER_USER}/k3s.yaml"
+sudo chown "${K3S_MASTER_USER}":"${K3S_MASTER_USER}" "/home/${K3S_MASTER_USER}/k3s.yaml"
+chmod 600 "/home/${K3S_MASTER_USER}/k3s.yaml"
 
 echo "Kubeconfig setup complete for ${K3S_MASTER_USER}."
 
@@ -29,11 +44,12 @@ echo "Installing Helm..."
 
 # Download the Helm signing key, dearmor it, and add it to the system's keyring.
 # This ensures the authenticity of the Helm packages.
-curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg >/dev/null
+# Added -fsSL to curl for silent fail and following redirects.
+curl -fsSL https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg >/dev/null
 
 # Add the Helm stable Debian repository to the system's apt sources list.
 # This allows apt to find and install Helm packages.
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list >/dev/null
 
 # Update the package list to include the newly added Helm repository.
 sudo apt update
@@ -56,14 +72,20 @@ sudo helm repo add hl-k3s https://achrovisual.github.io/hl-k3s/ --kubeconfig /et
 echo "Adding hl-k3s git repo..."
 
 # Create a directory named 'repos' to store git repositories.
-mkdir repos
+# Added -p to mkdir to create parent directories if they don't exist and suppress error if 'repos' already exists.
+mkdir -p repos
 
 # Change the current directory to 'repos'.
 cd repos/
 
 # Clone the hl-k3s git repository from GitHub. This repository likely contains
 # Kubernetes manifests, Helm charts, or other configuration files.
-git clone https://github.com/achrovisual/hl-k3s
+# Added check to only clone if directory doesn't exist to allow reruns without error.
+if [ ! -d "hl-k3s" ]; then
+    git clone https://github.com/achrovisual/hl-k3s
+else
+    echo "hl-k3s repository already exists. Skipping clone."
+fi
 
 # Change the current directory to the cloned 'hl-k3s' repository.
 cd hl-k3s
@@ -107,3 +129,4 @@ echo "Initial Argo CD admin password:"
 # It fetches the 'argocd-initial-admin-secret' Kubernetes secret in the 'argo-cd' namespace,
 # extracts the 'password' field, and decodes it from base64.
 sudo kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+echo "" # Adding a newline for cleaner output of the password
