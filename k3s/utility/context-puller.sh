@@ -1,25 +1,7 @@
 #!/bin/bash
+
 set -euo pipefail
 
-# --- IMPORTANT PRE-REQUISITE ON YOUR K3S MASTER NODE ---
-# The user specified by K3S_MASTER_USER typically does not have direct read access
-# to /etc/rancher/k3s/k3s.yaml. To fix the "Permission denied" error,
-# you MUST first run the following commands on your K3s master node:
-#
-# 1. SSH into your K3s master node as K3S_MASTER_USER.
-# 2. Run these commands to copy the kubeconfig to your user's home directory
-#    and set correct permissions:
-#    sudo cp /etc/rancher/k3s/k3s.yaml /home/${K3S_MASTER_USER}/k3s.yaml
-#    sudo chown ${K3S_MASTER_USER}:${K3S_MASTER_USER} /home/${K3S_MASTER_USER}/k3s.yaml
-#    chmod 600 /home/${K3S_MASTER_USER}/k3s.yaml
-#
-# After performing these steps on the master, you can then run this script
-# on your bastion host.
-# --------------------------------------------------------
-
-# --- YQ INSTALLATION CHECK ---
-# This script requires 'yq' (a portable YAML processor) to modify the kubeconfig.
-# This section checks if 'yq' is installed.
 echo "Starting yq installation check..."
 if ! command -v yq &> /dev/null
 then
@@ -31,11 +13,7 @@ else
     echo "yq is already installed."
 fi
 echo "yq check complete."
-# -----------------------------
 
-# --- KUBECTL INSTALLATION CHECK ---
-# This script requires 'kubectl' to merge and set the Kubernetes context.
-# This section checks if 'kubectl' is installed.
 echo "Starting kubectl installation check..."
 if ! command -v kubectl &> /dev/null
 then
@@ -49,7 +27,6 @@ else
     echo "kubectl is already installed."
 fi
 echo "kubectl check complete."
-# ----------------------------------
 
 K3S_MASTER_USER=""
 K3S_MASTER_IP=""
