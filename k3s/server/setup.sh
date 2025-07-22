@@ -11,6 +11,16 @@ if [ -z "${K3S_MASTER_USER}" ]; then
     exit 1
 fi
 
+if ! id -u "${K3S_MASTER_USER}" &>/dev/null; then
+    echo "Error: User '${K3S_MASTER_USER}' does not exist." >&2
+    echo "Please create the user manually before running this script, e.g.:" >&2
+    echo "  sudo useradd -m -s /bin/bash ${K3S_MASTER_USER}" >&2
+    echo "  sudo passwd ${K3S_MASTER_USER}" >&2
+    exit 1
+else
+    echo "User '${K3S_MASTER_USER}' already exists. Proceeding..."
+fi
+
 if [ ! -d "/home/${K3S_MASTER_USER}" ]; then
     echo "Warning: User home directory /home/${K3S_MASTER_USER} does not exist. Attempting to create it."
     sudo mkdir -p "/home/${K3S_MASTER_USER}"
