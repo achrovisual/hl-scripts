@@ -69,9 +69,9 @@ echo "Installing Argo CD..."
 
 sudo helm repo add argo https://argoproj.github.io/argo-helm
 
-sudo helm install argo-cd charts/private/argo-cd --namespace argo-cd --create-namespace --kubeconfig /etc/rancher/k3s/k3s.yaml
-
 sudo helm dependency build charts/private/argo-cd
+
+sudo helm install argo-cd charts/private/argo-cd --namespace argo-cd --create-namespace --kubeconfig /etc/rancher/k3s/k3s.yaml
 
 echo "Setting up Argo CD and apps (MetalLB, OpenTelemetry Collector)..."
 
