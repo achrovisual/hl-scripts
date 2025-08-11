@@ -1,11 +1,11 @@
 # --- Variable Definitions ---
-:local host "1.1.1.1";
-:local wan1 "ether1";
-:local wan2 "lte1";
-:local webhookURL "";
+:local host "1.1.1.1"; # The IP address to ping for connectivity checks (e.g., a reliable public DNS server like Cloudflare's 1.1.1.1)
+:local wan1 "ether1"; # Name of the first WAN interface to monitor
+:local wan2 "lte1"; # Name of the second WAN interface to monitor
+:local webhookURL ""; # The URL of the webhook to which status notifications will be sent
 
 # --- Logic for WAN1 ---
-:local newStatus1;
+:local newStatus1; # Local variable to store the current status of the first WAN interface
 :if ([/ping count=5 interface=$wan1 address=$host interval=1s] = 0) do={
     :set newStatus1 "down";
 } else={
@@ -13,7 +13,7 @@
 }
 
 # --- Logic for WAN2 ---
-:local newStatus2;
+:local newStatus2; # Local variable to store the current status of the second WAN interface
 :if ([/ping count=5 interface=$wan2 address=$host interval=1s] = 0) do={
     :set newStatus2 "down";
 } else={
