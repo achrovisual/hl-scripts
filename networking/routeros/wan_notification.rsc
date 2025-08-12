@@ -24,12 +24,20 @@
 :log info "WAN $wan1 is $newStatus1, WAN $wan2 is $newStatus2. Sending notification.";
 # Use the :serialize function to create a valid JSON string
 :local jsonData [:serialize to=json {"wan1_status"=$newStatus1; "wan2_status"=$newStatus2}];
-# Build the HTTP header string separately
-:local httpHeader "Content-Type:application/json";
 # Skip sending if no webhook URL is configured
 :if ($webhookURL = "") do={
     :log warning "wan_notification: webhookURL is empty; skipping HTTP POST";
     :return;
 }
+# Build the HTTP header string separately
+:local httpHeader "Content-Type: application/json";
 # Pass the variables enclosed in quotes to ensure the parser treats them as single arguments
-/tool fetch url="$webhookURL" http-data="$jsonData" http-header-field="$httpHeader" http-method=post;
+:do {
+    /tool fetch url="$webhookURL" \
+        http-data="$jsonData" \
+        http-header-field="$httpHeader" \
+        http-method=post \
+        output=none \
+} on-error={
+    :log warning "wan_notification: HTTP POST failed for $webhookURL";
+}
