@@ -5,20 +5,20 @@
 :local webhookURL ""; # The URL of the webhook to which status notifications will be sent
 
 # --- Logic for WAN1 ---
-:local newStatus1; # Local variable to store the current status of the first WAN interface
-:if ([/ping count=5 interface=$wan1 address=$host interval=1s] = 0) do={
-    :set newStatus1 "down";
-} else={
-    :set newStatus1 "up";
-}
+:local newStatus1 "down"; # default to down; only promote on positive replies
+:do {
+    :if (([/ping address=$host interface=$wan1 count=5 interval=1s]) > 0) do={
+        :set newStatus1 "up";
+    }
+} on-error={}
 
 # --- Logic for WAN2 ---
-:local newStatus2; # Local variable to store the current status of the second WAN interface
-:if ([/ping count=5 interface=$wan2 address=$host interval=1s] = 0) do={
-    :set newStatus2 "down";
-} else={
-    :set newStatus2 "up";
-}
+:local newStatus2 "down"; # default to down; only promote on positive replies
+:do {
+    :if (([/ping address=$host interface=$wan2 count=5 interval=1s]) > 0) do={
+        :set newStatus2 "up";
+    }
+} on-error={}
 
 # Always send a single notification with the current status of both interfaces
 :log info "WAN $wan1 is $newStatus1, WAN $wan2 is $newStatus2. Sending notification.";
