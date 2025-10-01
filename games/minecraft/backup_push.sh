@@ -1,30 +1,35 @@
 #!/bin/bash
 
-# --- Configuration ---
-
-REMOTE_USER="PLACEHOLDER_REMOTE_USERNAME" 
-REMOTE_HOST="PLACEHOLDER_REMOTE_HOST_IP_OR_HOSTNAME" 
-REMOTE_PORT="PLACEHOLDER_REMOTE_SSH_PORT"
-REMOTE_PATH="/home/$REMOTE_USER/backups/minecraft/" 
-
-SERVER_DIR="PLACEHOLDER_SERVER_MINECRAFT_PATH" 
 TEMP_DIR="/tmp/minecraft_backups" 
 DATE=$(date +%Y-%m-%d_%H%M%S)
-BACKUP_FILENAME="minecraft_backup_$DATE.zip"
-LOG_FILE="/home/$REMOTE_USER/minecraft_scp_backup.log" 
-
-# --- Functions ---
+LOG_FILE="/tmp/minecraft_scp_backup.log" 
 
 log() {
     echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
 }
 
-# --- Script Start ---
+if [ "$#" -lt 5 ]; then
+    log "ERROR: Missing required arguments. Expected 5, got $#."
+    echo "Usage: $0 <SERVER_DIR> <REMOTE_USER> <REMOTE_HOST> <REMOTE_PORT> <REMOTE_PATH>" | tee -a "$LOG_FILE"
+    echo "Example: $0 /opt/minecraft/server myuser 192.168.1.1 22 /backups/minecraft/" | tee -a "$LOG_FILE"
+    exit 1
+fi
+
+SERVER_DIR="$1"
+REMOTE_USER="$2"
+REMOTE_HOST="$3"
+REMOTE_PORT="$4"
+REMOTE_PATH="$5"
+
+BACKUP_FILENAME="minecraft_backup_$(basename "$SERVER_DIR")_$DATE.zip"
 
 log "--- Starting Minecraft Server Backup (SCP Push) ---"
+log "Target directory to backup: $SERVER_DIR"
+log "Remote destination: $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH (Port $REMOTE_PORT)"
+
 
 if [ ! -d "$SERVER_DIR" ]; then
-    log "ERROR: Minecraft directory not found. Exiting."
+    log "ERROR: Minecraft directory '$SERVER_DIR' not found. Exiting."
     exit 1
 fi
 
@@ -39,7 +44,7 @@ if ! zip -r -q "$ZIP_PATH" "$SERVER_DIR" &>> "$LOG_FILE"; then
 fi
 log "ZIP created successfully."
 
-log "Pushing $BACKUP_FILENAME to $REMOTE_HOST (Port $REMOTE_PORT)"
+log "Pushing $BACKUP_FILENAME to $REMOTE_HOST (Port $REMOTE_PORT) at $REMOTE_PATH"
 
 if ! scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> "$LOG_FILE"; then
     log "ERROR: SCP upload failed. Check port, keys, and network."
