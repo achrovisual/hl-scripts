@@ -30,6 +30,20 @@ REMOTE_HOST="$3"
 REMOTE_PORT="$4"
 REMOTE_PATH="$5"
 
+echo "Configuration Summary:"
+echo "  Local Server Directory: $SERVER_DIR"
+echo "  Remote User: $REMOTE_USER"
+echo "  Remote Host: $REMOTE_HOST"
+echo "  Remote Port: $REMOTE_PORT"
+echo "  Remote Path: $REMOTE_PATH"
+if [ -n "$LOG_FILE_PATH" ]; then
+    echo "  Logging to File: $LOG_FILE_PATH"
+else
+    echo "  Logging: Console only (No file output)"
+fi
+echo "------------------------------------------------------------------------"
+
+
 BACKUP_FILENAME="minecraft_backup_$(basename "$SERVER_DIR")_$DATE.zip"
 
 log "--- Starting Minecraft Server Backup (SCP Push) ---"
