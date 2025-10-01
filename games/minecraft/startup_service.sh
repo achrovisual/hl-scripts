@@ -2,20 +2,49 @@
 
 SERVICE_NAME="minecraft.service"
 SYSTEMD_DIR="/etc/systemd/system"
-MAX_MEMORY="8192M"
-MIN_MEMORY="2048M"
 
-if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <SERVER_PATH> <JAR_FILE_NAME> <USER_NAME>"
+DEFAULT_MEMORY="1024M"
+
+if [ "$#" -lt 3 ] || [ "$#" -gt 5 ]; then
+    echo "Usage: $0 <SERVER_PATH> <JAR_FILE_NAME> <USER_NAME> [MAX_MEMORY] [MIN_MEMORY]"
     echo ""
-    echo "Example:"
+    echo "  <SERVER_PATH>: Path to the Minecraft server directory."
+    echo "  <JAR_FILE_NAME>: Name of the server JAR file."
+    echo "  <USER_NAME>: System user to run the service as."
+    echo "  [MAX_MEMORY]: Optional. Max Java heap memory (e.g., 8192M). Default is 1024M."
+    echo "  [MIN_MEMORY]: Optional. Min Java heap memory (e.g., 2048M). Default is 1024M."
+    echo ""
+    echo "Example 1 (Default Memory):"
     echo "  $0 /mnt/ssd/services/minecraft/server fabric-server-mc.1.20.4-loader.0.17.2-launcher.1.1.0.jar achrovisual"
+    echo ""
+    echo "Example 2 (Custom Memory):"
+    echo "  $0 /mnt/ssd/services/minecraft/server fabric-server-mc.1.20.4-loader.0.17.2-launcher.1.1.0.jar achrovisual 8192M 2048M"
     exit 1
 fi
 
 SERVER_PATH="$1"
 JAR_FILE_NAME="$2"
 SERVICE_USER="$3"
+
+if [ -n "$4" ]; then
+    MAX_MEMORY="$4"
+else
+    MAX_MEMORY="$DEFAULT_MEMORY"
+fi
+
+if [ -n "$5" ]; then
+    MIN_MEMORY="$5"
+else
+    MIN_MEMORY="$DEFAULT_MEMORY"
+fi
+
+echo "Configuration Summary:"
+echo "  Server Path: $SERVER_PATH"
+echo "  JAR File: $JAR_FILE_NAME"
+echo "  Service User: $SERVICE_USER"
+echo "  Max Memory (-Xmx): $MAX_MEMORY"
+echo "  Min Memory (-Xms): $MIN_MEMORY"
+echo "------------------------------------------------------------------------"
 
 SERVICE_CONTENT=$(cat << EOF
 [Unit]
