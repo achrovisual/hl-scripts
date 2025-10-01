@@ -2,16 +2,25 @@
 
 TEMP_DIR="/tmp/minecraft_backups" 
 DATE=$(date +%Y-%m-%d_%H%M%S)
-LOG_FILE="/tmp/minecraft_scp_backup.log" 
+
+LOG_FILE_PATH="$6"
 
 log() {
-    echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+    local message="$1"
+    local timestamp=$(date +'%Y-%m-%d %H:%M:%S')
+    
+    if [ -n "$LOG_FILE_PATH" ]; then
+        echo "$timestamp - $message" | tee -a "$LOG_FILE_PATH"
+    else
+        echo "$timestamp - $message"
+    fi
 }
 
 if [ "$#" -lt 5 ]; then
-    log "ERROR: Missing required arguments. Expected 5, got $#."
-    echo "Usage: $0 <SERVER_DIR> <REMOTE_USER> <REMOTE_HOST> <REMOTE_PORT> <REMOTE_PATH>" | tee -a "$LOG_FILE"
-    echo "Example: $0 /opt/minecraft/server myuser 192.168.1.1 22 /backups/minecraft/" | tee -a "$LOG_FILE"
+    echo "ERROR: Missing required arguments. Expected 5-6, got $#."
+    echo "Usage: $0 <SERVER_DIR> <REMOTE_USER> <REMOTE_HOST> <REMOTE_PORT> <REMOTE_PATH> [LOG_PATH]"
+    echo "Example (with log): $0 /opt/minecraft/server myuser 192.168.1.1 22 /backups/minecraft/ /var/log/backup.log"
+    echo "Example (no log): $0 /opt/minecraft/server myuser 192.168.1.1 22 /backups/minecraft/"
     exit 1
 fi
 
@@ -38,16 +47,29 @@ mkdir -p "$TEMP_DIR"
 ZIP_PATH="$TEMP_DIR/$BACKUP_FILENAME"
 
 log "Creating ZIP archive: $BACKUP_FILENAME"
-if ! zip -r -q "$ZIP_PATH" "$SERVER_DIR" &>> "$LOG_FILE"; then
-    log "ERROR: ZIP creation failed."
-    exit 1
+if [ -n "$LOG_FILE_PATH" ]; then
+    if ! zip -r -q "$ZIP_PATH" "$SERVER_DIR" &>> "$LOG_FILE_PATH"; then
+        log "ERROR: ZIP creation failed."
+        exit 1
+    fi
+else
+    if ! zip -r -q "$ZIP_PATH" "$SERVER_DIR" &>> /dev/null; then
+        log "ERROR: ZIP creation failed."
+        exit 1
+    fi
 fi
 log "ZIP created successfully."
 
 log "Pushing $BACKUP_FILENAME to $REMOTE_HOST (Port $REMOTE_PORT) at $REMOTE_PATH"
 
-if ! scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> "$LOG_FILE"; then
-    log "ERROR: SCP upload failed. Check port, keys, and network."
+if [ -n "$LOG_FILE_PATH" ]; then
+    if ! scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> "$LOG_FILE_PATH"; then
+        log "ERROR: SCP upload failed. Check port, keys, and network."
+    fi
+else
+    if ! scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> /dev/null; then
+        log "ERROR: SCP upload failed. Check port, keys, and network."
+    fi
 fi
 SCP_STATUS=$?
 
