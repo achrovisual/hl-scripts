@@ -77,15 +77,16 @@ log "ZIP created successfully."
 log "Pushing $BACKUP_FILENAME to $REMOTE_HOST (Port $REMOTE_PORT) at $REMOTE_PATH"
 
 if [ -n "$LOG_FILE_PATH" ]; then
-    if ! scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> "$LOG_FILE_PATH"; then
-        log "ERROR: SCP upload failed. Check port, keys, and network."
-    fi
+    scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> "$LOG_FILE_PATH"
 else
-    if ! scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> /dev/null; then
-        log "ERROR: SCP upload failed. Check port, keys, and network."
-    fi
++    scp -P "$REMOTE_PORT" -o BatchMode=yes "$ZIP_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH" &>> /dev/null
 fi
+
 SCP_STATUS=$?
+
+if [ $SCP_STATUS -ne 0 ]; then
+    log "ERROR: SCP upload failed. Check port, keys, and network."
+fi
 
 if [ $SCP_STATUS -eq 0 ]; then
     log "Upload successful."
