@@ -7,7 +7,8 @@ LOG_FILE_PATH="$6"
 
 log() {
     local message="$1"
-    local timestamp=$(date +'%Y-%m-%d %H:%M:%S')
+    local timestamp
+    timestamp=$(date +'%Y-%m-%d %H:%M:%S')
     
     if [ -n "$LOG_FILE_PATH" ]; then
         echo "$timestamp - $message" | tee -a "$LOG_FILE_PATH"
